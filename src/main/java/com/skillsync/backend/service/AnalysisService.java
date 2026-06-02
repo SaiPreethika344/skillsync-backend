@@ -52,7 +52,7 @@ public class AnalysisService {
             throw new IllegalArgumentException("At least one valid skill is required");
         }
 
-        List<CareerMatchDto> matches = careerMappingService.calculateCareerMatches(cleanedSkills);
+        List<CareerMatchDto> matches = careerMappingService.calculateCareerMatches(cleanedSkills, request.getField());
         List<String> skillGaps = careerMappingService.identifySkillGaps(cleanedSkills, matches);
         List<String> roadmapSteps = careerMappingService.generateRoadmapSteps(skillGaps);
 

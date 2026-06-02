@@ -23,12 +23,30 @@ public class CareerMappingService {
         this.careerMappingRepository = careerMappingRepository;
     }
 
-    public List<CareerMatchDto> calculateCareerMatches(List<String> rawSkills) {
+    public List<CareerMatchDto> calculateCareerMatches(List<String> rawSkills, String field) {
         Set<String> normalizedSkills = normalizeSkills(rawSkills);
         List<CareerMatchDto> matches = new ArrayList<>();
+        Map<String, List<String>> careerMap = careerSkillMap();
+        List<String> fieldKeywords = getFieldKeywords(field);
 
-        for (Map.Entry<String, List<String>> entry : careerSkillMap().entrySet()) {
+        for (Map.Entry<String, List<String>> entry : careerMap.entrySet()) {
             String career = entry.getKey();
+
+            // Filter by field if provided
+            if (field != null && !field.isBlank() && !fieldKeywords.isEmpty()) {
+                boolean matchesField = false;
+                String careerLower = career.toLowerCase(Locale.ROOT);
+                for (String keyword : fieldKeywords) {
+                    if (careerLower.contains(keyword.toLowerCase(Locale.ROOT))) {
+                        matchesField = true;
+                        break;
+                    }
+                }
+                if (!matchesField) {
+                    continue;
+                }
+            }
+
             List<String> careerSkills = entry.getValue();
             int matchedCount = 0;
 
@@ -46,6 +64,22 @@ public class CareerMappingService {
 
         matches.sort(Comparator.comparingInt(CareerMatchDto::getMatchPercentage).reversed());
         return matches;
+    }
+
+    private List<String> getFieldKeywords(String field) {
+        if (field == null || field.isBlank()) {
+            return List.of();
+        }
+
+        return switch (field.trim()) {
+            case "Law & Social Sciences" -> List.of("Law", "Legal", "Policy", "Social", "Psychology", "Sociology");
+            case "Engineering & Technology" -> List.of("Engineer", "Developer", "Data", "Software", "Tech");
+            case "Medical & Health Sciences" -> List.of("Doctor", "Medical", "Health", "Nurse", "Clinical", "Researcher");
+            case "Business & Commerce" -> List.of("Business", "Finance", "Analyst", "Manager", "Marketing", "Accountant");
+            case "Arts, Design & Media" -> List.of("Designer", "Artist", "Media", "Content", "Creative", "Writer");
+            case "Science & Research" -> List.of("Scientist", "Researcher", "Analyst", "Lab", "Science");
+            default -> List.of();
+        };
     }
 
     public List<String> identifySkillGaps(List<String> rawSkills, List<CareerMatchDto> careerMatches) {
