@@ -3,6 +3,7 @@ package com.skillsync.backend.config;
 import com.skillsync.backend.security.JwtAuthenticationFilter;
 import com.skillsync.backend.security.OAuth2SuccessHandler;
 import com.skillsync.backend.security.RestAuthenticationEntryPoint;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,6 +28,9 @@ public class SecurityConfig {
     private final RestAuthenticationEntryPoint authenticationEntryPoint;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
+
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter,
             RestAuthenticationEntryPoint authenticationEntryPoint,
@@ -43,7 +47,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfiguration = new org.springframework.web.cors.CorsConfiguration();
-                    corsConfiguration.setAllowedOrigins(java.util.List.of("http://localhost:5173", "http://localhost:5174", "https://skillsync-frontend-jet.vercel.app"));
+                    corsConfiguration.setAllowedOrigins(java.util.List.of(frontendUrl));
                     corsConfiguration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     corsConfiguration.setAllowedHeaders(java.util.List.of("*"));
                     corsConfiguration.setAllowCredentials(true);
